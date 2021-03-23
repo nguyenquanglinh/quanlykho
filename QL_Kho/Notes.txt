@@ -1,0 +1,2 @@
+﻿tai khoan admin: admin | 123456
+tai khoan nhan vien: loc | 123456

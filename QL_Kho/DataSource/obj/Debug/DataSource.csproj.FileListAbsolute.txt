@@ -1,0 +1,6 @@
+C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\DataSource\bin\Debug\DataSource.exe.config
+C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\DataSource\bin\Debug\DataSource.exe
+C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\DataSource\bin\Debug\DataSource.pdb
+C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\DataSource\obj\Debug\DataSource.exe
+C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\DataSource\obj\Debug\DataSource.pdb
+C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\DataSource\obj\Debug\DataSource.csprojResolveAssemblyReference.cache
