@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace DataSource.DTO
 {
-   public class CTPPhieuXuat
+   public class CTPhieuXuat
     {
         public string MaCTPX { get; set; }
         public string MaPX { get; set; }
         public string MaHH { get; set; }
         public string SoLuong { get; set; }
         public string GiaXuat { get; set; }
-        public CTPPhieuXuat() { }
-        public CTPPhieuXuat(DataRow row)
+        public CTPhieuXuat() { }
+        public CTPhieuXuat(DataRow row)
         {
             MaCTPX = row["MaCTPX"].ToString();
             MaPX = row["MaPX"].ToString();

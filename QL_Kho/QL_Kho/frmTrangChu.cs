@@ -157,9 +157,7 @@ namespace QL_Kho
 
         private void menuDieuChuyenKho_Click(object sender, EventArgs e)
         {
-            frmPhieuChuyenKho frm = new frmPhieuChuyenKho();
-            frm.MdiParent = this;
-            frm.Show();
+            MessageBox.Show("chưa làm oke");
         }
 
         private void menuBaoCaoNhapKho_Click(object sender, EventArgs e)

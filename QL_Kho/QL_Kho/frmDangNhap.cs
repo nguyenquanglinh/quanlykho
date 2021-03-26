@@ -1,5 +1,4 @@
-﻿using QL_Kho.Data;
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -7,8 +6,6 @@ namespace QL_Kho
 {
     public partial class frmDangNhap : Form
     {
-        DA_QLYKHOEntities DA_QLYKHOEntities = new DA_QLYKHOEntities();
-
         public frmDangNhap()
         {
             InitializeComponent();
@@ -25,7 +22,7 @@ namespace QL_Kho
         {
             lblThongBao.Text = "Đang đăng nhập...";
 
-            var dangnhap = DA_QLYKHOEntities.DANGNHAPs.Where(x => x.ID == txtTenTaiKhoan.Text && x.Password == txtMatKhau.Text).FirstOrDefault();
+            var dangnhap = DataManager.Instance.ListDangNhap.Where(x => x.ID == txtTenTaiKhoan.Text && x.Password == txtMatKhau.Text).FirstOrDefault();
             if (dangnhap != null)
             {
                     frmTrangChu c = new frmTrangChu(txtTenTaiKhoan.Text, dangnhap.PhanQuyen);

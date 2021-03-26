@@ -1,5 +1,6 @@
-﻿using QL_Kho.Data;
-using System;
+﻿using System;
+using DataSource.DTO;
+
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,7 +13,6 @@ namespace QL_Kho
 {
     public partial class frmHangHoa : Form
     {
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
         string id = string.Empty;
 
         public frmHangHoa()
@@ -22,7 +22,7 @@ namespace QL_Kho
 
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.HANGHOAs.Select(x => new { x.MaHH, x.TenHangHoa, x.MoTa, x.DVT, x.NHOMHANG.TenNhomHang, x.NHACUNGCAP.TenNCC, x.GiaVon, x.NgayCapNhat }).ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListHangHoa.ToList();
             bingding();
         }
         public void bingding()
@@ -47,14 +47,14 @@ namespace QL_Kho
             LoadData();
 
             //Load nhóm hàng
-            cbbNhomHang.DataSource = dA_QLYKHOEntities.NHOMHANGs.ToList();
-            cbbNhomHang.DisplayMember = nameof(NHOMHANG.TenNhomHang);
-            cbbNhomHang.ValueMember = nameof(NHOMHANG.MaNH);
+            cbbNhomHang.DataSource = DataManager.Instance.ListNhomHang.ToList();
+            cbbNhomHang.DisplayMember = nameof(NhomHang.TenNhomHang);
+            cbbNhomHang.ValueMember = nameof(NhomHang.MaNH);
 
             //Load nhà cung cấp
-            cbbNhaCungCap.DataSource = dA_QLYKHOEntities.NHACUNGCAPs.ToList();
-            cbbNhaCungCap.DisplayMember = nameof(NHACUNGCAP.TenNCC);
-            cbbNhaCungCap.ValueMember = nameof(NHACUNGCAP.MaNCC);
+            cbbNhaCungCap.DataSource = DataManager.Instance.ListNhaCC.ToList();
+            cbbNhaCungCap.DisplayMember = nameof(NhaCungCap.TenNCC);
+            cbbNhaCungCap.ValueMember = nameof(NhaCungCap.MaNCC);
 
             //bật tắt các nút
             btnThem.Enabled = true;
@@ -122,7 +122,7 @@ namespace QL_Kho
                 // Set lại ID tự tăng
                 cbbNhomHang_SelectedIndexChanged(null, null);
 
-                HANGHOA hANGHOA = new HANGHOA()
+                HangHoa hANGHOA = new HangHoa()
                 {
                     MaHH = txtMaHH.Text,
                     TenHangHoa = txtTenHangHoa.Text,
@@ -130,23 +130,24 @@ namespace QL_Kho
                     DVT = txtDonViTinh.Text,
                     MaNH = cbbNhomHang.SelectedValue == null ? null : cbbNhomHang.SelectedValue.ToString(),
                     MaNCC = cbbNhaCungCap.SelectedValue == null ? null : cbbNhaCungCap.SelectedValue.ToString(),
-                    GiaVon = decimal.Parse(txtGiaVon.Text),
-                    NgayCapNhat = DateTime.Now
+                    GiaVon = txtGiaVon.Text,
+                    NgayCapNhat = DateTime.Now.ToString()
                 };
-                dA_QLYKHOEntities.HANGHOAs.Add(hANGHOA);
-                dA_QLYKHOEntities.SaveChanges();
+                //TODO: theem hang hoas
+                DataManager.Instance.PostHangHoa(hANGHOA);
             }
             else
             {
-                HANGHOA hANGHOA = dA_QLYKHOEntities.HANGHOAs.FirstOrDefault(x => x.MaHH == txtMaHH.Text);
+                HangHoa hANGHOA = DataManager.Instance.ListHangHoa.FirstOrDefault(x => x.MaHH == txtMaHH.Text);
                 hANGHOA.TenHangHoa = txtTenHangHoa.Text;
                 hANGHOA.MoTa = txtMoTa.Text;
                 hANGHOA.DVT = txtDonViTinh.Text;
                 hANGHOA.MaNH = cbbNhomHang.SelectedValue == null ? null : cbbNhomHang.SelectedValue.ToString();
                 hANGHOA.MaNCC = cbbNhaCungCap.SelectedValue == null ? null : cbbNhaCungCap.SelectedValue.ToString();
-                hANGHOA.GiaVon = decimal.Parse(txtGiaVon.Text);
-                hANGHOA.NgayCapNhat = DateTime.Now;
-                dA_QLYKHOEntities.SaveChanges();
+                hANGHOA.GiaVon = txtGiaVon.Text;
+                hANGHOA.NgayCapNhat = DateTime.Now.ToString();
+                //TODO: sua hang hoa
+                DataManager.Instance.PutHangHoa(hANGHOA);
             }
             LoadData();
 
@@ -158,8 +159,8 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                id = dgvDanhSach.SelectedRows[0].Cells[nameof(HANGHOA.MaHH)].Value.ToString();
-                HANGHOA hANGHOA = dA_QLYKHOEntities.HANGHOAs.FirstOrDefault(x => x.MaHH == id);
+                id = dgvDanhSach.SelectedRows[0].Cells[nameof(HangHoa.MaHH)].Value.ToString();
+                HangHoa hANGHOA = DataManager.Instance.ListHangHoa.FirstOrDefault(x => x.MaHH == id);
 
                 txtMaHH.Text = hANGHOA.MaHH;
                 txtTenHangHoa.Text = hANGHOA.TenHangHoa;
@@ -212,15 +213,15 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(HANGHOA.MaHH)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(HangHoa.MaHH)].Value.ToString();
                 DialogResult dlgresult = MessageBox.Show("Bạn có chắc chắn muốn xóa bản ghi này không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dlgresult == DialogResult.Yes)
                 {
                     try
                     {
-                        HANGHOA hANGHOA = dA_QLYKHOEntities.HANGHOAs.FirstOrDefault(x => x.MaHH == id);
-                        dA_QLYKHOEntities.HANGHOAs.Remove(hANGHOA);
-                        dA_QLYKHOEntities.SaveChanges();
+                        //TODO: xoas hang hoa
+                        HangHoa hANGHOA = DataManager.Instance.ListHangHoa.FirstOrDefault(x => x.MaHH == id);
+                        DataManager.Instance.DeleteHangHoa(hANGHOA);
                         LoadData();
                     }
                     catch (Exception)
@@ -241,10 +242,8 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.HANGHOAs
-                .Where(x => x.TenHangHoa.Contains(txtTimKiem.Text))
-                .Select(x => new { x.MaHH, x.TenHangHoa, x.MoTa, x.DVT, x.NHOMHANG.TenNhomHang, x.NHACUNGCAP.TenNCC, x.GiaVon, x.NgayCapNhat })
-                .ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListHangHoa
+                .Where(x => x.TenHangHoa.Contains(txtTimKiem.Text)).ToList();
         }
 
         private void txtTimKiem_KeyDown(object sender, KeyEventArgs e)
@@ -263,7 +262,7 @@ namespace QL_Kho
         private string NewID(string hangsoID)
         {
             string oldID = "0";
-            HANGHOA hANGHOA = dA_QLYKHOEntities.HANGHOAs.Where(x => x.MaHH.StartsWith(hangsoID)).OrderByDescending(x => x.MaHH).FirstOrDefault();
+            HangHoa hANGHOA = DataManager.Instance.ListHangHoa.Where(x => x.MaHH.StartsWith(hangsoID)).OrderByDescending(x => x.MaHH).FirstOrDefault();
             if (hANGHOA != null)
             {
                 oldID = hANGHOA.MaHH.Replace(hangsoID, string.Empty);

@@ -1,5 +1,4 @@
-﻿using QL_Kho.Data;
-using QL_Kho.Properties;
+﻿using QL_Kho.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DataSource.DTO;
 
 namespace QL_Kho
 {
@@ -17,8 +17,6 @@ namespace QL_Kho
         BindingSource bdHangHoa = new BindingSource();
         List<HangHoaNhap> dsHangHoa = new List<HangHoaNhap>();
         const string hangsoID = "PN";
-
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
 
         string id = string.Empty;
 
@@ -29,9 +27,8 @@ namespace QL_Kho
 
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.PHIEUNHAPs
-                .Where(x=>x.MaPN.StartsWith(hangsoID))
-                .Select(x=> new { x.MaPN, x.NgayNhap, x.NHACUNGCAP.TenNCC, x.DiaChi, x.NHANVIEN.TenNhanVien, x.KHO.TenKho, x.GhiChu })
+            dgvDanhSach.DataSource = DataManager.Instance.ListPhieuNhap
+                .Where(x => x.MaPN.StartsWith(hangsoID))
                 .ToList();
         }
 
@@ -40,24 +37,24 @@ namespace QL_Kho
             LoadData();
 
             //Load nhân viên
-            cbbNhanVien.DataSource = dA_QLYKHOEntities.NHANVIENs.ToList();
-            cbbNhanVien.DisplayMember = nameof(NHANVIEN.TenNhanVien);
-            cbbNhanVien.ValueMember = nameof(NHANVIEN.MaNV);
+            cbbNhanVien.DataSource = DataManager.Instance.ListNhanVien.ToList();
+            cbbNhanVien.DisplayMember = nameof(NhanVien.TenNhanVien);
+            cbbNhanVien.ValueMember = nameof(NhanVien.MaNV);
 
             //Load nhà cung cấp
-            cbbNCC.DataSource = dA_QLYKHOEntities.NHACUNGCAPs.ToList();
-            cbbNCC.DisplayMember = nameof(NHACUNGCAP.TenNCC);
-            cbbNCC.ValueMember = nameof(NHACUNGCAP.MaNCC);
+            cbbNCC.DataSource = DataManager.Instance.ListNhaCC;
+            cbbNCC.DisplayMember = nameof(NhaCungCap.TenNCC);
+            cbbNCC.ValueMember = nameof(NhaCungCap.MaNCC);
 
             //Load kho
-            cbbKho.DataSource = dA_QLYKHOEntities.KHOes.ToList();
-            cbbKho.DisplayMember = nameof(KHO.TenKho);
-            cbbKho.ValueMember = nameof(KHO.MaKho);
+            cbbKho.DataSource = DataManager.Instance.ListKho;
+            cbbKho.DisplayMember = nameof(Kho.TenKho);
+            cbbKho.ValueMember = nameof(Kho.MaKho);
 
             //Load hàng hóa
-            cbbHangHoa.DataSource = dA_QLYKHOEntities.HANGHOAs.ToList();
-            cbbHangHoa.DisplayMember = nameof(HANGHOA.TenHangHoa);
-            cbbHangHoa.ValueMember = nameof(HANGHOA.MaHH);
+            cbbHangHoa.DataSource = DataManager.Instance.ListHangHoa;
+            cbbHangHoa.DisplayMember = nameof(HangHoa.TenHangHoa);
+            cbbHangHoa.ValueMember = nameof(HangHoa.MaHH);
 
             //Khởi tạo grid hàng hóa
             bdHangHoa.DataSource = dsHangHoa;
@@ -142,54 +139,57 @@ namespace QL_Kho
                 return;
             }
 
-            PHIEUNHAP pHIEUNHAP = new PHIEUNHAP();
+            PhieuNhap pHIEUNHAP = new PhieuNhap();
             if (id == string.Empty)
             {
                 // Thêm mới
-                pHIEUNHAP = new PHIEUNHAP()
+                pHIEUNHAP = new PhieuNhap()
                 {
                     MaPN = NewID(),
-                    NgayNhap = txtNgayNhap.Value,
+                    NgayNhap = txtNgayNhap.Value.ToString(),
                     MaNCC = cbbNCC.SelectedValue.ToString(),
                     DiaChi = txtDiaChi.Text,
                     MaNV = cbbNhanVien.SelectedValue.ToString(),
                     MaKho = cbbKho.SelectedValue.ToString(),
                     GhiChu = txtGhiChu.Text
                 };
-
-                dA_QLYKHOEntities.PHIEUNHAPs.Add(pHIEUNHAP);
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PostPhieuNhap(pHIEUNHAP);
             }
             else
             {
                 // Sửa
-                pHIEUNHAP = dA_QLYKHOEntities.PHIEUNHAPs.Where(x => x.MaPN == id).FirstOrDefault();
+                pHIEUNHAP = DataManager.Instance.ListPhieuNhap.Where(x => x.MaPN == id).FirstOrDefault();
 
-                pHIEUNHAP.NgayNhap = txtNgayNhap.Value;
+                pHIEUNHAP.NgayNhap = txtNgayNhap.Value.ToString();
                 pHIEUNHAP.MaNCC = cbbNCC.SelectedValue.ToString();
                 pHIEUNHAP.DiaChi = txtDiaChi.Text;
                 pHIEUNHAP.MaNV = cbbNhanVien.SelectedValue.ToString();
                 pHIEUNHAP.MaKho = cbbKho.SelectedValue.ToString();
                 pHIEUNHAP.GhiChu = txtGhiChu.Text;
 
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PutPhieuNhap(pHIEUNHAP);
             }
 
             // Cập nhật chi tiết phiếu nhập
-            var lstOldCTPhieuNhap = dA_QLYKHOEntities.CTPHIEUNHAPs.Where(x => x.MaPN == pHIEUNHAP.MaPN);
-            dA_QLYKHOEntities.CTPHIEUNHAPs.RemoveRange(lstOldCTPhieuNhap);
+            var lstOldCTPhieuNhap = DataManager.Instance.ListCTPhieuNhap.Where(x => x.MaPN == pHIEUNHAP.MaPN).ToList();
+            for (int i = 0; i < lstOldCTPhieuNhap.Count(); i++)
+            {
+                DataManager.Instance.DeleteCTPhieuNhap(lstOldCTPhieuNhap[i]);
+            }
 
-            var lstCTPhieuNhap = dsHangHoa.Select((x, index) => new CTPHIEUNHAP
+            var lstCTPhieuNhap = dsHangHoa.Select((x, index) => new CTPhieuNhap
             {
                 MaCTPN = pHIEUNHAP.MaPN + "CT" + (index + 1).ToString().PadLeft(3, '0'),
                 MaPN = pHIEUNHAP.MaPN,
                 MaHH = x.MaHH,
-                SoLuong = x.SoLuong,
-                GiaNhap = x.GiaNhap
-            });
+                SoLuong = x.SoLuong.ToString(),
+                GiaNhap = x.GiaNhap.ToString()
+            }).ToList();
 
-            dA_QLYKHOEntities.CTPHIEUNHAPs.AddRange(lstCTPhieuNhap);
-            dA_QLYKHOEntities.SaveChanges();
+            for (int i = 0; i < lstCTPhieuNhap.Count(); i++)
+            {
+                DataManager.Instance.PostCTPhieuNhap(lstCTPhieuNhap[i]);
+            }
 
             // Load data phiếu nhập
             LoadData();
@@ -202,13 +202,13 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                id = dgvDanhSach.SelectedRows[0].Cells[nameof(PHIEUNHAP.MaPN)].Value.ToString();
+                id = dgvDanhSach.SelectedRows[0].Cells[nameof(PhieuNhap.MaPN)].Value.ToString();
 
                 // Load phiếu nhập
-                PHIEUNHAP pHIEUNHAP = dA_QLYKHOEntities.PHIEUNHAPs.Where(x => x.MaPN == id).FirstOrDefault();
+                PhieuNhap pHIEUNHAP = DataManager.Instance.ListPhieuNhap.Where(x => x.MaPN == id).FirstOrDefault();
 
                 txtMaPN.Text = pHIEUNHAP.MaPN;
-                txtNgayNhap.Value = pHIEUNHAP.NgayNhap.Value;
+                txtNgayNhap.Value = DateTime.Parse(pHIEUNHAP.NgayNhap);
                 cbbNCC.SelectedValue = pHIEUNHAP.MaNCC;
                 txtDiaChi.Text = pHIEUNHAP.DiaChi;
                 cbbNhanVien.SelectedValue = pHIEUNHAP.MaNV;
@@ -216,16 +216,9 @@ namespace QL_Kho
                 txtGhiChu.Text = pHIEUNHAP.GhiChu;
 
                 // Load phiếu nhập chi tiết
-                List<HangHoaNhap> hangHoaNhaps = dA_QLYKHOEntities.CTPHIEUNHAPs.Where(x => x.MaPN == id).Select(x => new HangHoaNhap
-                {
-                    MaHH = x.MaHH,
-                    TenHangHoa = x.HANGHOA.TenHangHoa,
-                    SoLuong = x.SoLuong,
-                    GiaNhap = x.GiaNhap
-                }).ToList();
+
 
                 dsHangHoa.Clear();
-                dsHangHoa.AddRange(hangHoaNhaps);
                 bdHangHoa.ResetBindings(true);
 
                 //bật tắt các nút
@@ -281,18 +274,19 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PHIEUNHAP.MaPN)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PhieuNhap.MaPN)].Value.ToString();
                 DialogResult dlgresult = MessageBox.Show("Bạn có chắc chắn muốn xóa bản ghi này không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dlgresult == DialogResult.Yes)
                 {
                     try
                     {
-                        var lstOldCTPhieuNhap = dA_QLYKHOEntities.CTPHIEUNHAPs.Where(x => x.MaPN == id);
-                        dA_QLYKHOEntities.CTPHIEUNHAPs.RemoveRange(lstOldCTPhieuNhap);
-
-                        PHIEUNHAP pHIEUNHAP = dA_QLYKHOEntities.PHIEUNHAPs.Where(x => x.MaPN == id).FirstOrDefault();
-                        dA_QLYKHOEntities.PHIEUNHAPs.Remove(pHIEUNHAP);
-                        dA_QLYKHOEntities.SaveChanges();
+                        var lstOldCTPhieuNhap = DataManager.Instance.ListCTPhieuNhap.Where(x => x.MaPN == id).ToList();
+                        for (int i = 0; i < lstOldCTPhieuNhap.Count(); i++)
+                        {
+                            DataManager.Instance.DeleteCTPhieuNhap(lstOldCTPhieuNhap[i]);
+                        }
+                        PhieuNhap pHIEUNHAP = DataManager.Instance.ListPhieuNhap.Where(x => x.MaPN == id).FirstOrDefault();
+                        DataManager.Instance.DeletePhieuNhap(pHIEUNHAP);
                         LoadData();
                     }
                     catch (Exception)
@@ -311,9 +305,9 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.PHIEUNHAPs
-                .Where(x => x.MaPN.StartsWith(hangsoID) && (x.GhiChu.Contains(txtTimKiem.Text) || x.NHACUNGCAP.TenNCC.Contains(txtTimKiem.Text) || x.DiaChi.Contains(txtTimKiem.Text) || x.NHANVIEN.TenNhanVien.Contains(txtTimKiem.Text) || x.KHO.TenKho.Contains(txtTimKiem.Text)))
-                .Select(x => new { x.MaPN, x.NgayNhap, x.NHACUNGCAP.TenNCC, x.DiaChi, x.NHANVIEN.TenNhanVien, x.KHO.TenKho, x.GhiChu })
+            dgvDanhSach.DataSource = DataManager.Instance.ListPhieuNhap
+                .Where(x => x.MaPN.StartsWith(hangsoID) && (x.GhiChu.Contains(txtTimKiem.Text) || x.DiaChi.Contains(txtTimKiem.Text)))
+                .Select(x => new { x.MaPN, x.NgayNhap, x.DiaChi, x.GhiChu })
                 .ToList();
             //Load Hang Hoa
             dsHangHoa.Clear();
@@ -401,7 +395,7 @@ namespace QL_Kho
         private string NewID()
         {
             string oldID = "0";
-            PHIEUNHAP pHIEUNHAP = dA_QLYKHOEntities.PHIEUNHAPs.Where(x => x.MaPN.StartsWith(hangsoID)).OrderByDescending(x => x.MaPN).FirstOrDefault();
+            PhieuNhap pHIEUNHAP = DataManager.Instance.ListPhieuNhap.Where(x => x.MaPN.StartsWith(hangsoID)).OrderByDescending(x => x.MaPN).FirstOrDefault();
             if (pHIEUNHAP != null)
             {
                 oldID = pHIEUNHAP.MaPN.Replace(hangsoID, string.Empty);
@@ -415,19 +409,10 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PHIEUNHAP.MaPN)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PhieuNhap.MaPN)].Value.ToString();
 
-                // Load phiếu nhập chi tiết
-                List<HangHoaNhap> hangHoaNhaps = dA_QLYKHOEntities.CTPHIEUNHAPs.Where(x => x.MaPN == id).Select(x => new HangHoaNhap
-                {
-                    MaHH = x.MaHH,
-                    TenHangHoa = x.HANGHOA.TenHangHoa,
-                    SoLuong = x.SoLuong,
-                    GiaNhap = x.GiaNhap
-                }).ToList();
-
+               
                 dsHangHoa.Clear();
-                dsHangHoa.AddRange(hangHoaNhaps);
                 bdHangHoa.ResetBindings(true);
             }
         }

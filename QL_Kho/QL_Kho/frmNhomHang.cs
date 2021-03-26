@@ -1,5 +1,4 @@
-﻿using QL_Kho.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,12 +6,12 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DataSource.DTO;
 
 namespace QL_Kho
 {
     public partial class frmNhomHang : Form
     {
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
         string id = string.Empty;
 
         public frmNhomHang()
@@ -22,7 +21,7 @@ namespace QL_Kho
 
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.NHOMHANGs.Select(x => new { x.MaNH, x.TenNhomHang, x.MoTa }).ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListNhomHang.Select(x => new { x.MaNH, x.TenNhomHang, x.MoTa }).ToList();
             bingding();
         }
         public void bingding()
@@ -80,28 +79,27 @@ namespace QL_Kho
             if (id == string.Empty)
             {
                 // Kiểm tra Mã nhóm hàng bị trùng?
-                bool tontai = dA_QLYKHOEntities.NHOMHANGs.Any(x => x.MaNH == txtMaNH.Text.Trim());
+                bool tontai = DataManager.Instance.ListNhomHang.Any(x => x.MaNH == txtMaNH.Text.Trim());
                 if (tontai == true)
                 {
                     MessageBox.Show("Mã nhóm hàng này đã tồn tại!", "Thông báo!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                NHOMHANG nHOMHANG = new NHOMHANG()
+                NhomHang nHOMHANG = new NhomHang()
                 {
                     MaNH = txtMaNH.Text.Trim(),
                     TenNhomHang = txtTenNhomHang.Text,
                     MoTa = txtMoTa.Text
                 };
-                dA_QLYKHOEntities.NHOMHANGs.Add(nHOMHANG);
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PostNhomHang(nHOMHANG);
             }
             else
             {
-                NHOMHANG nHOMHANG = dA_QLYKHOEntities.NHOMHANGs.FirstOrDefault(x => x.MaNH == txtMaNH.Text);
+                NhomHang nHOMHANG = DataManager.Instance.ListNhomHang.FirstOrDefault(x => x.MaNH == txtMaNH.Text);
                 nHOMHANG.TenNhomHang = txtTenNhomHang.Text;
                 nHOMHANG.MoTa = txtMoTa.Text;
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PutNhomHang(nHOMHANG);
             }
 
             LoadData();
@@ -114,8 +112,8 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                id = dgvDanhSach.SelectedRows[0].Cells[nameof(NHOMHANG.MaNH)].Value.ToString();
-                NHOMHANG nHOMHANG = dA_QLYKHOEntities.NHOMHANGs.FirstOrDefault(x => x.MaNH == id);
+                id = dgvDanhSach.SelectedRows[0].Cells[nameof(NhomHang.MaNH)].Value.ToString();
+                NhomHang nHOMHANG = DataManager.Instance.ListNhomHang.FirstOrDefault(x => x.MaNH == id);
                 txtMaNH.Text = nHOMHANG.MaNH;
                 txtMoTa.Text = nHOMHANG.MoTa;
                 txtTenNhomHang.Text = nHOMHANG.TenNhomHang;
@@ -157,15 +155,14 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(NHOMHANG.MaNH)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(NhomHang.MaNH)].Value.ToString();
                 DialogResult dlgresult = MessageBox.Show("Bạn có chắc chắn muốn xóa bản ghi này không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dlgresult == DialogResult.Yes)
                 {
                     try
                     {
-                        NHOMHANG nHOMHANG = dA_QLYKHOEntities.NHOMHANGs.FirstOrDefault(x => x.MaNH == id);
-                        dA_QLYKHOEntities.NHOMHANGs.Remove(nHOMHANG);
-                        dA_QLYKHOEntities.SaveChanges();
+                        NhomHang nHOMHANG = DataManager.Instance.ListNhomHang.FirstOrDefault(x => x.MaNH == id);
+                        DataManager.Instance.DeleteNhomHang(nHOMHANG);
                         LoadData();
                     }
                     catch (Exception)
@@ -186,7 +183,7 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.NHOMHANGs
+            dgvDanhSach.DataSource = DataManager.Instance.ListNhomHang
                 .Where(x => x.TenNhomHang.Contains(txtTimKiem.Text) || x.MoTa.Contains(txtTimKiem.Text))
                 .Select(x=> new { x.MaNH, x.TenNhomHang, x.MoTa })
                 .ToList();

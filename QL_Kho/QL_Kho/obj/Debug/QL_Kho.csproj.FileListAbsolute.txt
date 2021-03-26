@@ -95,3 +95,4 @@ C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\QL_Kho\obj\Debug\
 C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\QL_Kho\obj\Debug\QL_Kho.csproj.GenerateResource.Cache
 C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\QL_Kho\obj\Debug\RdlCompile.cache
 C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\QL_Kho\obj\Debug\RdlCompile.compiled
+C:\Users\thang\OneDrive\Desktop\(Copy of) QL_Kho\QL_Kho\QL_Kho\QL_Kho\bin\Debug\QL_Kho.exe.config

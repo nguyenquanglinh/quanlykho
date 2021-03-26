@@ -1,18 +1,15 @@
-﻿using QL_Kho.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DataSource.DTO;
 
 namespace QL_Kho
 {
     public partial class frmKho : Form
     {
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
         string id = string.Empty;
 
         public frmKho()
@@ -22,7 +19,7 @@ namespace QL_Kho
 
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.KHOes.Select(x => new { x.MaKho, x.TenKho, x.DiaChi }).ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListKho.Select(x => new { x.MaKho, x.TenKho, x.DiaChi }).ToList();
             bingding();
         }
         public void bingding()
@@ -74,21 +71,20 @@ namespace QL_Kho
             if (id == string.Empty)
             {
 
-                KHO kHO = new KHO()
+                Kho kHO = new Kho()
                 {
                     MaKho = NewID(),
                     TenKho = txtTenKho.Text,
                     DiaChi = txtDiaChi.Text
                 };
-                dA_QLYKHOEntities.KHOes.Add(kHO);
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PostKho(kHO);
             }
             else
             {
-                KHO kHO = dA_QLYKHOEntities.KHOes.FirstOrDefault(x => x.MaKho == txtMaKho.Text);
+                Kho kHO = DataManager.Instance.ListKho.FirstOrDefault(x => x.MaKho == txtMaKho.Text);
                 kHO.TenKho = txtTenKho.Text;
                 kHO.DiaChi = txtDiaChi.Text;
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PutKho(kHO);
             }
 
             LoadData();
@@ -101,8 +97,8 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                id = dgvDanhSach.SelectedRows[0].Cells[nameof(KHO.MaKho)].Value.ToString();
-                KHO kHO = dA_QLYKHOEntities.KHOes.FirstOrDefault(x => x.MaKho == id);
+                id = dgvDanhSach.SelectedRows[0].Cells[nameof(Kho.MaKho)].Value.ToString();
+                Kho kHO = DataManager.Instance.ListKho.FirstOrDefault(x => x.MaKho == id);
                 txtMaKho.Text = kHO.MaKho;
                 txtDiaChi.Text = kHO.DiaChi;
                 txtTenKho.Text = kHO.TenKho;
@@ -142,15 +138,14 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(KHO.MaKho)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(Kho.MaKho)].Value.ToString();
                 DialogResult dlgresult = MessageBox.Show("Bạn có chắc chắn muốn xóa bản ghi này không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dlgresult == DialogResult.Yes)
                 {
                     try
                     {
-                        KHO kHO = dA_QLYKHOEntities.KHOes.FirstOrDefault(x => x.MaKho == id);
-                        dA_QLYKHOEntities.KHOes.Remove(kHO);
-                        dA_QLYKHOEntities.SaveChanges();
+                        Kho kHO = DataManager.Instance.ListKho.FirstOrDefault(x => x.MaKho == id);
+                        DataManager.Instance.DeleteKho(kHO);
                         LoadData();
                     }
                     catch (Exception)
@@ -171,7 +166,7 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.KHOes
+            dgvDanhSach.DataSource = DataManager.Instance.ListKho
                 .Select(x=> new { x.MaKho, x.TenKho, x.DiaChi})
                 .Where(x => x.TenKho.Contains(txtTimKiem.Text) || x.DiaChi.Contains(txtTimKiem.Text))
                 .ToList();
@@ -194,7 +189,7 @@ namespace QL_Kho
         {
             string hangsoID = "KHO";
             string oldID = "0";
-            KHO kHO = dA_QLYKHOEntities.KHOes.OrderByDescending(x => x.MaKho).FirstOrDefault();
+            Kho kHO = DataManager.Instance.ListKho.OrderByDescending(x => x.MaKho).FirstOrDefault();
             if (kHO != null)
             {
                 oldID = kHO.MaKho.Replace(hangsoID, string.Empty);

@@ -1,5 +1,4 @@
-﻿using QL_Kho.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,12 +6,12 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DataSource.DTO;
 
 namespace QL_Kho
 {
     public partial class frmNhaCungCap : Form
     {
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
         string id = string.Empty;
 
         public frmNhaCungCap()
@@ -21,7 +20,7 @@ namespace QL_Kho
         }
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.NHACUNGCAPs.Select(x=> new { x.MaNCC, x.TenNCC, x.DiaChi, x.SDT, x.Email }).ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListNhaCC.Select(x=> new { x.MaNCC, x.TenNCC, x.DiaChi, x.SDT, x.Email }).ToList();
             bingding();
         }
         public void bingding()
@@ -78,7 +77,7 @@ namespace QL_Kho
 
             if (id == string.Empty)
             {
-                NHACUNGCAP nHACUNGCAP = new NHACUNGCAP()
+                NhaCungCap nHACUNGCAP = new NhaCungCap()
                 {
                     MaNCC = NewID(),
                     TenNCC = txtTenNCC.Text,
@@ -86,17 +85,16 @@ namespace QL_Kho
                     SDT = txtSDT.Text,
                     Email = txtEmail.Text,
                 };
-                dA_QLYKHOEntities.NHACUNGCAPs.Add(nHACUNGCAP);
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PostNhaCC(nHACUNGCAP);
             }
             else
             {
-                NHACUNGCAP nHACUNGCAP = dA_QLYKHOEntities.NHACUNGCAPs.FirstOrDefault(x => x.MaNCC == txtMaNCC.Text);
+                NhaCungCap nHACUNGCAP = DataManager.Instance.ListNhaCC.FirstOrDefault(x => x.MaNCC == txtMaNCC.Text);
                 nHACUNGCAP.TenNCC = txtTenNCC.Text;
                 nHACUNGCAP.DiaChi = txtDiaChi.Text;
                 nHACUNGCAP.SDT = txtSDT.Text;
                 nHACUNGCAP.Email = txtEmail.Text;
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PutNhaCC(nHACUNGCAP);
             }
 
             LoadData();
@@ -110,7 +108,7 @@ namespace QL_Kho
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
                 id = dgvDanhSach.SelectedRows[0].Cells["MaNCC"].Value.ToString();
-                NHACUNGCAP nHACUNGCAP = dA_QLYKHOEntities.NHACUNGCAPs.FirstOrDefault(x => x.MaNCC == id);
+                NhaCungCap nHACUNGCAP = DataManager.Instance.ListNhaCC.FirstOrDefault(x => x.MaNCC == id);
                 txtMaNCC.Text = nHACUNGCAP.MaNCC;
                 txtDiaChi.Text = nHACUNGCAP.DiaChi;
                 txtSDT.Text = nHACUNGCAP.SDT;
@@ -160,9 +158,8 @@ namespace QL_Kho
                 {
                     try
                     {
-                        NHACUNGCAP nHACUNGCAP = dA_QLYKHOEntities.NHACUNGCAPs.FirstOrDefault(x => x.MaNCC == id);
-                        dA_QLYKHOEntities.NHACUNGCAPs.Remove(nHACUNGCAP);
-                        dA_QLYKHOEntities.SaveChanges();
+                        NhaCungCap nHACUNGCAP = DataManager.Instance.ListNhaCC.FirstOrDefault(x => x.MaNCC == id);
+                        DataManager.Instance.DeleteNhaCC(nHACUNGCAP);
                         LoadData();
                     }
                     catch (Exception)
@@ -183,7 +180,7 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.NHACUNGCAPs
+            dgvDanhSach.DataSource = DataManager.Instance.ListNhaCC
                 .Where(x => x.TenNCC.Contains(txtTimKiem.Text))
                 .Select(x => new { x.MaNCC, x.TenNCC, x.DiaChi, x.SDT, x.Email })
                 .ToList();
@@ -206,7 +203,7 @@ namespace QL_Kho
         {
             string hangsoID = "NCC";
             string oldID = "0";
-            NHACUNGCAP nHACUNGCAP = dA_QLYKHOEntities.NHACUNGCAPs.OrderByDescending(x => x.MaNCC).FirstOrDefault();
+            NhaCungCap nHACUNGCAP = DataManager.Instance.ListNhaCC.OrderByDescending(x => x.MaNCC).FirstOrDefault();
             if (nHACUNGCAP != null)
             {
                 oldID = nHACUNGCAP.MaNCC.Replace(hangsoID, string.Empty);

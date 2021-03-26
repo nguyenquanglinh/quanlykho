@@ -1,5 +1,4 @@
-﻿using QL_Kho.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,12 +6,12 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DataSource.DTO;
 
 namespace QL_Kho
 {
     public partial class frmDoiMatKhau : Form
     {
-        DA_QLYKHOEntities DA_QLYKHOEntities = new DA_QLYKHOEntities();
         string id;
 
         public frmDoiMatKhau(string tentaikhoan)
@@ -25,11 +24,14 @@ namespace QL_Kho
         {
             if (txtMatKhauMoi1.Text == txtMatKhauMoi2.Text)
             {
-                DANGNHAP dANGNHAP = DA_QLYKHOEntities.DANGNHAPs.FirstOrDefault(x => x.ID == id);
+                DangNhap dANGNHAP = DataManager.Instance.ListDangNhap.FirstOrDefault(x => x.ID == id);
                 dANGNHAP.Password = txtMatKhauMoi1.Text;
-                DA_QLYKHOEntities.SaveChanges();
-                MessageBox.Show("Thay đổi mật khẩu thành công.", "Thông báo!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.Close();
+                if (DataManager.Instance.PutDangNhap(dANGNHAP))
+                {
+                    MessageBox.Show("Thay đổi mật khẩu thành công.", "Thông báo!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.Close();
+                }
+                else MessageBox.Show("Thay đổi mật khẩu không thành công.", "Thông báo!", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {

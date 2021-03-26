@@ -7,19 +7,21 @@ using System.Threading.Tasks;
 
 namespace DataSource.DTO
 {
-   public class CTPPhieuMua
+    public class CTPhieuNhap
     {
-        public string MaCTPM { get; set; }
-        public string MaPM { get; set; }
+        public string MaCTPN { get; set; }
+        public string MaPN { get; set; }
         public string MaHH { get; set; }
         public string SoLuong { get; set; }
-        public CTPPhieuMua() { }
-        public CTPPhieuMua(DataRow row)
+        public string GiaNhap { get; set; }
+        public CTPhieuNhap() { }
+        public CTPhieuNhap(DataRow row)
         {
-            MaCTPM = row["MaCTPM"].ToString();
-            MaPM = row["MaPM"].ToString();
+            MaCTPN = row["MaCTPN"].ToString();
+            MaPN = row["MaPN"].ToString();
             MaHH = row["MaHH"].ToString();
             SoLuong = row["SoLuong"].ToString();
+            GiaNhap = row["GiaNhap"].ToString();
         }
     }
 }

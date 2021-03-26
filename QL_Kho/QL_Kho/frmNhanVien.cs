@@ -6,13 +6,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using QL_Kho.Data;
-
+using DataSource.DTO;
 namespace QL_Kho
 {
     public partial class frmNhanVien : Form
     {
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
         string id = string.Empty;
         public frmNhanVien()
         {
@@ -21,7 +19,7 @@ namespace QL_Kho
 
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.NHANVIENs.Select(x=> new { x.MaNV, x.TenNhanVien, x.ChucVu, x.NgaySinh, x.GioiTinh, x.DiaChi, x.SDT, x.Email}).ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListNhanVien.Select(x => new { x.MaNV, x.TenNhanVien, x.ChucVu, x.NgaySinh, x.GioiTinh, x.DiaChi, x.SDT, x.Email }).ToList();
             bingding();
         }
         public void bingding()
@@ -46,7 +44,7 @@ namespace QL_Kho
         private void frmNhanVien_Load(object sender, EventArgs e)
         {
             LoadData();
-            
+
             //bật tắt các nút
             btnThem.Enabled = true;
             btnSua.Enabled = true;
@@ -87,33 +85,32 @@ namespace QL_Kho
 
             if (id == string.Empty)
             {
-                NHANVIEN nHANVIEN = new NHANVIEN()
+                NhanVien nHANVIEN = new NhanVien()
                 {
                     MaNV = NewID(),
                     TenNhanVien = txtTenNhanVien.Text,
                     ChucVu = cbbChucVu.Text,
-                    NgaySinh = txtNgaySinh.Value,
+                    NgaySinh = txtNgaySinh.Value.ToString(),
                     GioiTinh = cbbGioiTinh.Text,
                     DiaChi = txtDiaChi.Text,
                     SDT = txtSDT.Text,
                     Email = txtEmail.Text,
                 };
-                dA_QLYKHOEntities.NHANVIENs.Add(nHANVIEN);
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PostNhanVien(nHANVIEN);
             }
             else
             {
-                NHANVIEN nHANVIEN = dA_QLYKHOEntities.NHANVIENs.FirstOrDefault(x=>x.MaNV == id);
+                NhanVien nHANVIEN = DataManager.Instance.ListNhanVien.FirstOrDefault(x => x.MaNV == id);
                 nHANVIEN.TenNhanVien = txtTenNhanVien.Text;
                 nHANVIEN.ChucVu = cbbChucVu.Text;
-                nHANVIEN.NgaySinh = txtNgaySinh.Value;
+                nHANVIEN.NgaySinh = txtNgaySinh.Value.ToString();
                 nHANVIEN.GioiTinh = cbbGioiTinh.Text;
                 nHANVIEN.DiaChi = txtDiaChi.Text;
                 nHANVIEN.SDT = txtSDT.Text;
                 nHANVIEN.Email = txtEmail.Text;
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PutNhanVien(nHANVIEN);
             };
-               
+
             LoadData();
             huy();
         }
@@ -123,11 +120,11 @@ namespace QL_Kho
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
                 id = dgvDanhSach.SelectedRows[0].Cells["MaNV"].Value.ToString();
-                NHANVIEN nHANVIEN = dA_QLYKHOEntities.NHANVIENs.FirstOrDefault(x => x.MaNV == id);
+                NhanVien nHANVIEN = DataManager.Instance.ListNhanVien.FirstOrDefault(x => x.MaNV == id);
                 txtMaNhanVien.Text = nHANVIEN.MaNV;
                 txtTenNhanVien.Text = nHANVIEN.TenNhanVien;
                 cbbChucVu.Text = nHANVIEN.ChucVu;
-                txtNgaySinh.Value = nHANVIEN.NgaySinh.Value;
+                txtNgaySinh.Value = DateTime.Parse(nHANVIEN.NgaySinh);
                 cbbGioiTinh.Text = nHANVIEN.GioiTinh;
                 txtDiaChi.Text = nHANVIEN.DiaChi;
                 txtSDT.Text = nHANVIEN.SDT;
@@ -179,9 +176,8 @@ namespace QL_Kho
                 {
                     try
                     {
-                        NHANVIEN nHANVIEN = dA_QLYKHOEntities.NHANVIENs.FirstOrDefault(x => x.MaNV == id);
-                        dA_QLYKHOEntities.NHANVIENs.Remove(nHANVIEN);
-                        dA_QLYKHOEntities.SaveChanges();
+                        NhanVien nHANVIEN = DataManager.Instance.ListNhanVien.FirstOrDefault(x => x.MaNV == id);
+                        DataManager.Instance.DeleteNhanVien(nHANVIEN);
                         LoadData();
                     }
                     catch (Exception)
@@ -202,7 +198,7 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.NHANVIENs
+            dgvDanhSach.DataSource = DataManager.Instance.ListNhanVien
                 .Where(x => x.TenNhanVien.Contains(txtTimKiem.Text) || x.SDT.Contains(txtTimKiem.Text) || x.DiaChi.Contains(txtTimKiem.Text) || x.Email.Contains(txtTimKiem.Text))
                 .Select(x => new { x.MaNV, x.TenNhanVien, x.ChucVu, x.NgaySinh, x.GioiTinh, x.DiaChi, x.SDT, x.Email })
                 .ToList();
@@ -225,7 +221,7 @@ namespace QL_Kho
         {
             string hangsoID = "NV";
             string oldID = "0";
-            NHANVIEN nHANVIEN = dA_QLYKHOEntities.NHANVIENs.OrderByDescending(x => x.MaNV).FirstOrDefault();
+            NhanVien nHANVIEN = DataManager.Instance.ListNhanVien.OrderByDescending(x => x.MaNV).FirstOrDefault();
             if (nHANVIEN != null)
             {
                 oldID = nHANVIEN.MaNV.Replace(hangsoID, string.Empty);

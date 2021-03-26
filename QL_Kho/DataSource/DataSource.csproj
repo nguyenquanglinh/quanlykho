@@ -58,9 +58,9 @@
     <Compile Include="DAO\PhieuNhapDAO.cs" />
     <Compile Include="DAO\PhieuXuatDAO.cs" />
     <Compile Include="DAO\TonDaukyDAO.cs" />
-    <Compile Include="DTO\CTPPhieuMua.cs" />
-    <Compile Include="DTO\CTPPhieuNhap.cs" />
-    <Compile Include="DTO\CTPPhieuXuat.cs" />
+    <Compile Include="DTO\CTPhieuMua.cs" />
+    <Compile Include="DTO\CTPhieuNhap.cs" />
+    <Compile Include="DTO\CTPhieuXuat.cs" />
     <Compile Include="DTO\DangNhap.cs" />
     <Compile Include="DTO\HangHoa.cs" />
     <Compile Include="DTO\KhachHang.cs" />

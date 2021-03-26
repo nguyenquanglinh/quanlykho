@@ -1,5 +1,4 @@
-﻿using QL_Kho.Data;
-using QL_Kho.Properties;
+﻿using QL_Kho.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DataSource.DTO;
 
 namespace QL_Kho
 {
@@ -17,7 +17,6 @@ namespace QL_Kho
         BindingSource bdHangHoa = new BindingSource();
         List<HangHoaMua> dsHangHoa = new List<HangHoaMua>();
 
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
 
         string id = string.Empty;
 
@@ -25,10 +24,10 @@ namespace QL_Kho
         {
             InitializeComponent();
         }
-        
+
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.PHIEUMUAs.Select(x=>new { x.MaPM, x.NgayLap, x.NHANVIEN.TenNhanVien, x.GhiChu }).ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListPhieuMua;
         }
 
         private void frmNhanVien_Load(object sender, EventArgs e)
@@ -36,12 +35,12 @@ namespace QL_Kho
             LoadData();
 
             //Load nhân viên
-            cbbNhanVien.DataSource = dA_QLYKHOEntities.NHANVIENs.ToList();
+            cbbNhanVien.DataSource = DataManager.Instance.ListNhanVien.ToList();
             cbbNhanVien.DisplayMember = "TenNhanVien";
             cbbNhanVien.ValueMember = "MaNV";
 
             //Load hàng hóa
-            cbbHangHoa.DataSource = dA_QLYKHOEntities.HANGHOAs.ToList();
+            cbbHangHoa.DataSource = DataManager.Instance.ListHangHoa.ToList();
             cbbHangHoa.DisplayMember = "TenHangHoa";
             cbbHangHoa.ValueMember = "MaHH";
 
@@ -114,47 +113,50 @@ namespace QL_Kho
                 return;
             }
 
-            PHIEUMUA pHIEUMUA = new PHIEUMUA();
+            PhieuMua pHIEUMUA = new PhieuMua();
             if (id == string.Empty)
             {
                 // Thêm mới
-                pHIEUMUA = new PHIEUMUA()
+                pHIEUMUA = new PhieuMua()
                 {
                     MaPM = NewID(),
-                    NgayLap = txtNgayNhap.Value,
+                    NgayLap = txtNgayNhap.Value.ToString(),
                     MaNV = cbbNhanVien.SelectedValue.ToString(),
                     GhiChu = txtGhiChu.Text
                 };
 
-                dA_QLYKHOEntities.PHIEUMUAs.Add(pHIEUMUA);
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PostPhieuMua(pHIEUMUA);
             }
             else
             {
                 // Sửa
-                pHIEUMUA = dA_QLYKHOEntities.PHIEUMUAs.Where(x => x.MaPM == id).FirstOrDefault();
+                pHIEUMUA = DataManager.Instance.ListPhieuMua.Where(x => x.MaPM == id).FirstOrDefault();
 
-                pHIEUMUA.NgayLap = txtNgayNhap.Value;
+                pHIEUMUA.NgayLap = txtNgayNhap.Value.ToString();
                 pHIEUMUA.MaNV = cbbNhanVien.SelectedValue.ToString();
                 pHIEUMUA.GhiChu = txtGhiChu.Text;
 
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PutPhieuMua(pHIEUMUA);
             }
 
             // Cập nhật chi tiết phiếu mua
-            var lstOldCTPhieuMua = dA_QLYKHOEntities.CTPHIEUMUAs.Where(x => x.MaPM == pHIEUMUA.MaPM);
-            dA_QLYKHOEntities.CTPHIEUMUAs.RemoveRange(lstOldCTPhieuMua);
+            var lstOldCTPhieuMua = DataManager.Instance.ListCTPhieuMua.Where(x => x.MaPM == pHIEUMUA.MaPM).ToList();
+            for (int i = 0; i < lstOldCTPhieuMua.Count(); i++)
+            {
+                DataManager.Instance.DeleteCTPhieuMua(lstOldCTPhieuMua[i]);
+            }
 
-            var lstCTPhieuMua = dsHangHoa.Select((x, index) => new CTPHIEUMUA
+            var lstCTPhieuMua = dsHangHoa.Select((x, index) => new CTPhieuMua
             {
                 MaCTPM = pHIEUMUA.MaPM + "CT" + (index + 1).ToString().PadLeft(3, '0'),
                 MaPM = pHIEUMUA.MaPM,
                 MaHH = x.MaHH,
-                SoLuong = x.SoLuong
-            });
-
-            dA_QLYKHOEntities.CTPHIEUMUAs.AddRange(lstCTPhieuMua);
-            dA_QLYKHOEntities.SaveChanges();
+                SoLuong = x.SoLuong.ToString()
+            }).ToList();
+            for (int i = 0; i < lstCTPhieuMua.Count(); i++)
+            {
+                DataManager.Instance.PostCTPhieuMua(lstCTPhieuMua[i]);
+            }
 
             // Load data phiếu mua
             LoadData();
@@ -167,26 +169,20 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                id = dgvDanhSach.SelectedRows[0].Cells[nameof(PHIEUMUA.MaPM)].Value.ToString();
+                id = dgvDanhSach.SelectedRows[0].Cells[nameof(PhieuMua.MaPM)].Value.ToString();
 
                 // Load phiếu mua
-                PHIEUMUA pHIEUMUA = dA_QLYKHOEntities.PHIEUMUAs.Where(x => x.MaPM == id).FirstOrDefault();
+                PhieuMua pHIEUMUA = DataManager.Instance.ListPhieuMua.Where(x => x.MaPM == id).FirstOrDefault();
 
                 txtMaPM.Text = pHIEUMUA.MaPM;
-                txtNgayNhap.Value = pHIEUMUA.NgayLap.Value;
+                txtNgayNhap.Value = DateTime.Parse(pHIEUMUA.NgayLap);
                 cbbNhanVien.SelectedValue = pHIEUMUA.MaNV;
                 txtGhiChu.Text = pHIEUMUA.GhiChu;
 
                 // Load phiếu mua chi tiết
-                List<HangHoaMua> hangHoaMuas = dA_QLYKHOEntities.CTPHIEUMUAs.Where(x => x.MaPM == id).Select(x => new HangHoaMua
-                {
-                    MaHH = x.MaHH,
-                    TenHangHoa = x.HANGHOA.TenHangHoa,
-                    SoLuong = x.SoLuong
-                }).ToList();
+
 
                 dsHangHoa.Clear();
-                dsHangHoa.AddRange(hangHoaMuas);
                 bdHangHoa.ResetBindings(true);
 
                 //bật tắt các nút
@@ -241,20 +237,23 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PHIEUMUA.MaPM)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PhieuMua.MaPM)].Value.ToString();
                 DialogResult dlgresult = MessageBox.Show("Bạn có chắc chắn muốn xóa bản ghi này không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dlgresult == DialogResult.Yes)
                 {
                     try
                     {
                         // Cập nhật chi tiết phiếu mua
-                        var lstOldCTPhieuMua = dA_QLYKHOEntities.CTPHIEUMUAs.Where(x => x.MaPM == id);
-                        dA_QLYKHOEntities.CTPHIEUMUAs.RemoveRange(lstOldCTPhieuMua);
+                        var lstOldCTPhieuMua = DataManager.Instance.ListCTPhieuMua.Where(x => x.MaPM == id).ToList();
+                        for (int i = 0; i < lstOldCTPhieuMua.Count; i++)
+                        {
+                            DataManager.Instance.DeleteCTPhieuMua(lstOldCTPhieuMua[i]);
+                        }
 
-                        PHIEUMUA pHIEUMUA = dA_QLYKHOEntities.PHIEUMUAs.Where(x => x.MaPM == id).FirstOrDefault();
-                        dA_QLYKHOEntities.PHIEUMUAs.Remove(pHIEUMUA);
 
-                        dA_QLYKHOEntities.SaveChanges();
+                        PhieuMua pHIEUMUA = DataManager.Instance.ListPhieuMua.Where(x => x.MaPM == id).FirstOrDefault();
+                        DataManager.Instance.DeletePhieuMua(pHIEUMUA);
+
                         LoadData();
                     }
                     catch (Exception)
@@ -273,9 +272,9 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.PHIEUMUAs
-                .Where(x => x.GhiChu.Contains(txtTimKiem.Text) || x.NHANVIEN.TenNhanVien.Contains(txtTimKiem.Text))
-                .Select(x => new { x.MaPM, x.NgayLap, x.NHANVIEN.TenNhanVien, x.GhiChu })
+            dgvDanhSach.DataSource = DataManager.Instance.ListPhieuMua
+                .Where(x => x.GhiChu.Contains(txtTimKiem.Text))
+                .Select(x => new { x.MaPM, x.NgayLap, x.GhiChu })
                 .ToList();
             //Load Hang Hoa
             dsHangHoa.Clear();
@@ -355,7 +354,7 @@ namespace QL_Kho
         {
             string hangsoID = "PM";
             string oldID = "0";
-            PHIEUMUA pHIEUMUA = dA_QLYKHOEntities.PHIEUMUAs.OrderByDescending(x => x.MaPM).FirstOrDefault();
+            PhieuMua pHIEUMUA = DataManager.Instance.ListPhieuMua.OrderByDescending(x => x.MaPM).FirstOrDefault();
             if (pHIEUMUA != null)
             {
                 oldID = pHIEUMUA.MaPM.Replace(hangsoID, string.Empty);
@@ -369,18 +368,11 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PHIEUMUA.MaPM)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(PhieuMua.MaPM)].Value.ToString();
 
                 // Load phiếu mua chi tiết
-                List<HangHoaMua> hangHoaNhaps = dA_QLYKHOEntities.CTPHIEUMUAs.Where(x => x.MaPM == id).Select(x => new HangHoaMua
-                {
-                    MaHH = x.MaHH,
-                    TenHangHoa = x.HANGHOA.TenHangHoa,
-                    SoLuong = x.SoLuong,
-                }).ToList();
 
                 dsHangHoa.Clear();
-                dsHangHoa.AddRange(hangHoaNhaps);
                 bdHangHoa.ResetBindings(true);
             }
         }

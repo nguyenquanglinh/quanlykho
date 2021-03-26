@@ -14,11 +14,11 @@ namespace API_QuanLyKho.Controllers
         [HttpGet]
         public IHttpActionResult Get()
         {
-            List<CTPPhieuNhap> item = CTPhieuNhapDAO.Instance.GetList();
+            List<CTPhieuNhap> item = CTPhieuNhapDAO.Instance.GetList();
             return Ok(item);
         }
 
-        public IHttpActionResult Post([FromBody] CTPPhieuNhap x)
+        public IHttpActionResult Post([FromBody] CTPhieuNhap x)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Not a valid model");
@@ -27,7 +27,7 @@ namespace API_QuanLyKho.Controllers
             return Ok();
         }
 
-        public IHttpActionResult Put([FromBody]  CTPPhieuNhap x)
+        public IHttpActionResult Put([FromBody]  CTPhieuNhap x)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Not a valid data");

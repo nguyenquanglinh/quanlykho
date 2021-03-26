@@ -34,14 +34,14 @@ namespace DataSource.DAO
         }
 
 
-        public List<CTPPhieuMua> GetList()
+        public List<CTPhieuMua> GetList()
         {
-            List<CTPPhieuMua> list = new List<CTPPhieuMua>();
+            List<CTPhieuMua> list = new List<CTPhieuMua>();
 
             DataTable data = DataProvider.Instance.ExecuteQuery("SELECT * FROM dbo.CTPHIEUMUA");
             foreach (DataRow item in data.Rows)
             {
-                CTPPhieuMua obj = new CTPPhieuMua(item);
+                CTPhieuMua obj = new CTPhieuMua(item);
                 list.Add(obj);
             }
             return list;

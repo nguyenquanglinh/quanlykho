@@ -1,5 +1,4 @@
-﻿using QL_Kho.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,12 +6,12 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DataSource.DTO;
 
 namespace QL_Kho
 {
     public partial class frmKhachHang : Form
     {
-        DA_QLYKHOEntities dA_QLYKHOEntities = new DA_QLYKHOEntities();
         string id = string.Empty;
 
         public frmKhachHang()
@@ -22,7 +21,7 @@ namespace QL_Kho
 
         private void LoadData()
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.KHACHHANGs.Select(x => new { x.MaKH, x.TenKhachHang, x.DiaChi, x.SDT, x.Email }).ToList();
+            dgvDanhSach.DataSource = DataManager.Instance.ListKhachHang.Select(x => new { x.MaKH, x.TenKhachHang, x.DiaChi, x.SDT, x.Email }).ToList();
             bingding();
         }
         public void bingding()
@@ -79,7 +78,7 @@ namespace QL_Kho
 
             if (id == string.Empty)
             {
-                KHACHHANG kHACHHANG = new KHACHHANG()
+                KhachHang kHACHHANG = new KhachHang()
                 {
                     MaKH = NewID(),
                     TenKhachHang = txtTenKhachHang.Text,
@@ -87,17 +86,16 @@ namespace QL_Kho
                     SDT = txtSDT.Text,
                     Email = txtEmail.Text,
                 };
-                dA_QLYKHOEntities.KHACHHANGs.Add(kHACHHANG);
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PostKhachHang(kHACHHANG);
             }
             else
             {
-                KHACHHANG kHACHHANG = dA_QLYKHOEntities.KHACHHANGs.FirstOrDefault(x => x.MaKH == txtMaKH.Text);
+                KhachHang kHACHHANG = DataManager.Instance.ListKhachHang.FirstOrDefault(x => x.MaKH == txtMaKH.Text);
                 kHACHHANG.TenKhachHang = txtTenKhachHang.Text;
                 kHACHHANG.DiaChi = txtDiaChi.Text;
                 kHACHHANG.SDT = txtSDT.Text;
                 kHACHHANG.Email = txtEmail.Text;
-                dA_QLYKHOEntities.SaveChanges();
+                DataManager.Instance.PutKhachHang(kHACHHANG);
             }
 
             LoadData();
@@ -110,8 +108,8 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                id = dgvDanhSach.SelectedRows[0].Cells[nameof(KHACHHANG.MaKH)].Value.ToString();
-                KHACHHANG kHACHHANG = dA_QLYKHOEntities.KHACHHANGs.FirstOrDefault(x => x.MaKH == id);
+                id = dgvDanhSach.SelectedRows[0].Cells[nameof(KhachHang.MaKH)].Value.ToString();
+                KhachHang kHACHHANG = DataManager.Instance.ListKhachHang.FirstOrDefault(x => x.MaKH == id);
                 txtMaKH.Text = kHACHHANG.MaKH;
                 txtDiaChi.Text = kHACHHANG.DiaChi;
                 txtSDT.Text = kHACHHANG.SDT;
@@ -155,15 +153,14 @@ namespace QL_Kho
         {
             if (dgvDanhSach.SelectedRows.Count > 0)
             {
-                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(KHACHHANG.MaKH)].Value.ToString();
+                string id = dgvDanhSach.SelectedRows[0].Cells[nameof(KhachHang.MaKH)].Value.ToString();
                 DialogResult dlgresult = MessageBox.Show("Bạn có chắc chắn muốn xóa bản ghi này không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dlgresult == DialogResult.Yes)
                 {
                     try
                     {
-                        KHACHHANG kHACHHANG = dA_QLYKHOEntities.KHACHHANGs.FirstOrDefault(x => x.MaKH == id);
-                        dA_QLYKHOEntities.KHACHHANGs.Remove(kHACHHANG);
-                        dA_QLYKHOEntities.SaveChanges();
+                        KhachHang kHACHHANG = DataManager.Instance.ListKhachHang.FirstOrDefault(x => x.MaKH == id);
+                        DataManager.Instance.DeleteKhachHang(kHACHHANG);
                         LoadData();
                     }
                     catch (Exception)
@@ -184,7 +181,7 @@ namespace QL_Kho
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            dgvDanhSach.DataSource = dA_QLYKHOEntities.KHACHHANGs
+            dgvDanhSach.DataSource = DataManager.Instance.ListKhachHang
                 .Where(x => x.TenKhachHang.Contains(txtTimKiem.Text) || x.DiaChi.Contains(txtTimKiem.Text) || x.SDT.Contains(txtTimKiem.Text) || x.Email.Contains(txtTimKiem.Text))
                 .Select(x => new { x.MaKH, x.TenKhachHang, x.DiaChi, x.SDT, x.Email })
                 .ToList();
@@ -207,7 +204,7 @@ namespace QL_Kho
         {
             string hangsoID = "KH";
             string oldID = "0";
-            KHACHHANG kHACHHANG = dA_QLYKHOEntities.KHACHHANGs.OrderByDescending(x => x.MaKH).FirstOrDefault();
+            KhachHang kHACHHANG = DataManager.Instance.ListKhachHang.OrderByDescending(x => x.MaKH).FirstOrDefault();
             if (kHACHHANG != null)
             {
                 oldID = kHACHHANG.MaKH.Replace(hangsoID, string.Empty);
